@@ -105,11 +105,13 @@ class MoveParser(HTMLParser):
             try:
                 if re.match(r"\d+.\d+.\d{4}", data).group(0):
                     self._handle_date_data(data)
+                    return
             except AttributeError:
                 pass
             try:
                 if re.match(r"\d+:\d+", data).group(0):
                     self._handle_duration_data(data)
+                    return
             except AttributeError:
                 pass
             return
