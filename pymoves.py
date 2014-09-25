@@ -38,6 +38,7 @@ class MoveParser(HTMLParser):
                 return True
         except AttributeError:
             pass
+        return False
 
     def _test_content_href(self, name, value, regex):
         """Test content in href."""
@@ -80,7 +81,7 @@ class MoveParser(HTMLParser):
             if self._test_title(name, value):
                 try:
                     self._handle_title_data(attrs[1][1])
-                except:
+                except AttributeError:
                     raise
                 continue
             if self._test_date(name, value):
