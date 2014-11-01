@@ -11,6 +11,8 @@ class MoveParser(HTMLParser):
         HTMLParser.__init__(self)
         # Used for deciding when to read data.
         self.in_move = False
+        # Used for deciding when we are in data table.
+        self.in_data_table = False
         # Store move details.
         self.move_titles = []
         self.move_dates = []
@@ -51,7 +53,7 @@ class MoveParser(HTMLParser):
 
     def _test_title(self, name, value):
         """Get move title."""
-        return self._test_content_class(name, value, r"icon-\d{2} box")
+        return self._test_content_class(name, value, r"icon-\d+ box")
 
     def _test_date(self, name, value):
         """Test move date."""
@@ -77,21 +79,28 @@ class MoveParser(HTMLParser):
         """Handle start tag."""
         # Set to false every tag to avoid reading other data.
         self.in_move = False
-        for name, value in attrs:
-            if self._test_title(name, value):
-                try:
-                    self._handle_title_data(attrs[1][1])
-                except AttributeError:
-                    raise
-                continue
-            if self._test_date(name, value):
-                # Start reading data.
-                self.in_move = True
-                continue
-            if self._test_duration(name, value):
-                # Start reading data.
-                self.in_move = True
-                continue
+        # If We are in data table. Start getting moves.
+        try:
+            if attrs[0][1] == 'LatestMovesTable':
+                self.in_data_table = True
+        except IndexError:
+            pass
+        if self.in_data_table:
+            for name, value in attrs:
+                if self._test_title(name, value):
+                    try:
+                        self._handle_title_data(attrs[1][1])
+                    except AttributeError:
+                        raise
+                    continue
+                if self._test_date(name, value):
+                    # Start reading data.
+                    self.in_move = True
+                    continue
+                if self._test_duration(name, value):
+                    # Start reading data.
+                    self.in_move = True
+                    continue
 
     def handle_endtag(self, tag):
         """Handle end tag."""
